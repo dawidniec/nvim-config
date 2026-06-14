@@ -1,0 +1,10 @@
+# Neovim pobiera pluginy do katalogu DANYCH (~/.local/share/nvim), a nie do tego
+# katalogu z konfiguracją. Dlatego w repo nie ma "ciężkich" plików pluginów do ignorowania.
+#
+# WAŻNE: plik nvim-pack-lock.json ZOSTAWIAMY w repo. To "zamrożone" wersje pluginów,
+# dzięki którym na drugim komputerze dostaniesz dokładnie ten sam zestaw.
+
+# Katalog na lokalne pluginy "do dłubania" (gdybyś kiedyś takie dodał) — zgodnie
+# z zaleceniem dokumentacji vim.pack:
+pack/
+.DS_Store
