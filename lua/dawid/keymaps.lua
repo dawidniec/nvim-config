@@ -10,6 +10,7 @@ map("n", "<Esc>", "<cmd>nohlsearch<CR>")
 -- Szybki zapis / zamknięcie
 map("n", "<leader>w", "<cmd>write<CR>", { desc = "Zapisz plik" })
 map("n", "<leader>q", "<cmd>quit<CR>", { desc = "Zamknij okno" })
+map("n", "<leader>Q", "<cmd>quit!<CR>", { desc = "Zamknij bez zapisywania (wymuś)" })
 
 -- Skakanie między oknami: Ctrl + h/j/k/l (zamiast Ctrl-w h itd.)
 map("n", "<C-h>", "<C-w>h", { desc = "Okno w lewo" })

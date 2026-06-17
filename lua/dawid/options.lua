@@ -43,3 +43,11 @@ opt.clipboard = "unnamedplus"
 
 -- Szybsze reakcje pluginów reagujących na bezczynność (np. gitsigns, diagnostyka)
 opt.updatetime = 250
+
+-- Mignięcie podświetlenia po skopiowaniu tekstu (yank)
+vim.api.nvim_create_autocmd("TextYankPost", {
+    group = vim.api.nvim_create_augroup("highlight_yank", { clear = true }),
+    callback = function()
+        vim.hl.on_yank()
+    end,
+})
