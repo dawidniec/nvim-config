@@ -9,7 +9,7 @@ rozwijanych pluginów.
 | Funkcja | Rozwiązanie |
 | --- | --- |
 | Menedżer wtyczek | `vim.pack` (wbudowany w Neovim 0.12) |
-| Motyw | tokyonight |
+| Motyw | tokyonight (wariant moon) |
 | Kolorowanie składni | nvim-treesitter (gałąź `main`) |
 | Autouzupełnianie | blink.cmp |
 | LSP (serwery językowe) | nvim-lspconfig + mason (basedpyright, ruff, bashls) |
@@ -50,22 +50,37 @@ rozwijanych pluginów.
 Neovim w wersji **0.12 lub nowszej** (sprawdź: `nvim --version`). Reszta to programy,
 których wymagają poszczególne pluginy.
 
+`nvim-treesitter` na gałęzi `main` wymaga również `tar`, `curl`, kompilatora C oraz
+`tree-sitter-cli` w wersji **0.26.1 lub nowszej**.
+
 ### macOS (Homebrew)
 
 ```bash
-brew install neovim ripgrep lazygit
+brew install neovim ripgrep lazygit curl tree-sitter
 brew install openjdk@17                              # Java dla serwera językowego Nextflow
 xcode-select --install                               # kompilator C (dla parserów treesittera)
 brew install --cask font-jetbrains-mono-nerd-font    # font z ikonami
 ```
 
+Sprawdź wersję CLI Treesittera:
+
+```bash
+tree-sitter --version
+```
+
+Powinna wynosić co najmniej `0.26.1`.
+
 ### Ubuntu
 
 ```bash
 sudo apt update
-sudo apt install neovim build-essential ripgrep git curl wl-clipboard openjdk-17-jre
+sudo apt install neovim build-essential ripgrep git curl tar wl-clipboard openjdk-17-jre
 # (jeśli używasz X11 zamiast Wayland, zamiast wl-clipboard daj: sudo apt install xclip)
 ```
+
+Dodatkowo zainstaluj `tree-sitter-cli` w wersji co najmniej `0.26.1` zgodnie z instrukcją
+Twojej dystrybucji lub oficjalną instrukcją projektu Tree-sitter. Nie instaluj starej
+wersji z npm tylko dlatego, że pojawia się w dawnych poradnikach.
 
 `lazygit` często nie ma w domyślnych repozytoriach Ubuntu — najpewniej pobrać oficjalną binarkę:
 
@@ -170,7 +185,8 @@ i wpisz `:checkhealth lsp` albo `:lua =vim.lsp.get_clients()`.
 | `<space>rn` | zmień nazwę symbolu (LSP) |
 | `<space>ca` | akcje kodu (LSP) |
 | `<space>d` | pokaż błąd/ostrzeżenie w linii |
-| `<C-y>` (w menu) | zaakceptuj podpowiedź |
+| `<Enter>` (w menu) | zaakceptuj świadomie zaznaczoną podpowiedź |
+| `<Tab>` / `<S-Tab>` (w menu) | następna / poprzednia podpowiedź |
 
 ## Codzienne zarządzanie pluginami
 
@@ -184,16 +200,14 @@ i wpisz `:checkhealth lsp` albo `:lua =vim.lsp.get_clients()`.
 - **basedpyright + ruff** trochę się pokrywają (oba potrafią pokazać informacje pod
   kursorem). Na start to nie przeszkadza; gdyby diagnostyka się dublowała, można
   wyłączyć linter w jednym z nich — daj znać, dopasujemy.
-- Treesitter na gałęzi `main` przy pierwszym pliku danego typu może chwilę nie
-  kolorować, dopóki parser się nie pobierze. To normalne — po restarcie działa od razu.
-- **Treesitter jest zarchiwizowany** (od 3.04.2026, tylko do odczytu). Gałąź `main`
-  działa stabilnie na 0.12, ale nie dostaje już aktualizacji. Gdy wyklaruje się
-  utrzymywany następca (lub rdzeń Neovima przejmie zarządzanie parserami), warto
-  rozważyć przesiadkę. Na razie to świadomy, pragmatyczny wybór.
+- Treesitter na gałęzi `main` to aktualna, przepisana wersja przeznaczona dla
+  Neovima 0.12+. Przy pierwszym pliku danego typu może chwilę nie kolorować,
+  dopóki parser się nie pobierze. To normalne — po restarcie działa od razu.
+- `vim.pack` jest częścią Neovima 0.12, ale nadal jest oznaczony jako API eksperymentalne.
+  W tej konfiguracji używamy go świadomie, żeby zachować prosty, natywny setup.
 
 ## Łatwe dodatki na później (opcjonalnie)
 
 - `stevearc/conform.nvim` — formatowanie przy zapisie (np. ruff dla Pythona).
 
 Jeśli zechcesz, dopiszę gotowy moduł w tym samym stylu.
-
