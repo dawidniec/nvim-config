@@ -13,6 +13,13 @@ opt.shiftwidth = 4   -- szerokość jednego poziomu wcięcia
 opt.tabstop = 4      -- ile spacji "udaje" jeden Tab
 opt.smartindent = true -- automatyczne wcięcie po wejściu w nowy blok
 
+-- Pokaż tylko tabulatory i spacje na końcu linii (zwykłe spacje pozostają niewidoczne).
+opt.list = true
+opt.listchars = {
+    tab = "→ ",
+    trail = "·",
+}
+
 -- Wyszukiwanie
 opt.ignorecase = true -- ignoruj wielkość liter...
 opt.smartcase = true  -- ...chyba że w zapytaniu pojawi się wielka litera
