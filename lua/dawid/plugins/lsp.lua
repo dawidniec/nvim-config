@@ -7,12 +7,15 @@
 require("mason").setup()
 
 -- 2) mason-lspconfig: pilnuje, żeby potrzebne serwery były zainstalowane.
+--    Wyłączamy automatyczne uruchamianie serwerów, żeby lista aktywnych LSP była
+--    jawna i kontrolowana w jednym miejscu przez vim.lsp.enable() poniżej.
 require("mason-lspconfig").setup({
   ensure_installed = {
     "basedpyright", -- Python: typy, podpowiedzi, nawigacja po kodzie
     "ruff",         -- Python: bardzo szybki linter + formater
     "bashls",       -- Bash: bash-language-server
   },
+  automatic_enable = false,
 })
 
 -- 3) Włączamy serwery. Ich gotowe konfiguracje dostarcza nvim-lspconfig
