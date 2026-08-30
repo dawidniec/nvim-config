@@ -10,7 +10,7 @@ local ts = require("nvim-treesitter")
 -- Języki, dla których chcemy parsery. install() pobierze brakujące w tle
 -- (przy pierwszym uruchomieniu chwilę to trwa — patrz README).
 ts.install({
-  "python", "bash", "lua", "vim", "vimdoc",
+  "python", "bash", "rust", "lua", "vim", "vimdoc",
   "markdown", "markdown_inline", "json", "yaml", "toml",
   "gitcommit", "gitignore", "diff",
   "groovy", -- używany do kolorowania plików Nextflow (.nf) — patrz plugins/nextflow.lua
