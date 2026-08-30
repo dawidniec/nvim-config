@@ -1,4 +1,4 @@
-# Konfiguracja Neovim (0.12+) — Python & Bash
+# Konfiguracja Neovim (0.12+) — Python, Bash, Rust & Nextflow
 
 Lekka, modularna konfiguracja dla hobbysty. Oparta na **wbudowanym** menedżerze
 wtyczek `vim.pack` (Neovim 0.12+), z minimalną liczbą sprawdzonych, aktywnie
@@ -12,13 +12,14 @@ rozwijanych pluginów.
 | Motyw | tokyonight (wariant moon) |
 | Kolorowanie składni | nvim-treesitter (gałąź `main`) |
 | Autouzupełnianie | blink.cmp |
-| LSP (serwery językowe) | nvim-lspconfig + mason (basedpyright, ruff, bashls) |
+| LSP (serwery językowe) | nvim-lspconfig + mason (basedpyright, ruff, bashls, rust_analyzer) |
 | Git | gitsigns (znaczniki) + lazygit (TUI) |
 | Przeglądarka plików | oil.nvim |
 | Pasek statusu | lualine |
 | Wyszukiwarka | telescope |
 | Podpowiedzi skrótów | which-key |
 | Domykanie nawiasów | nvim-autopairs |
+| Rust | parser Treesitter + rust-analyzer + blink.cmp |
 | Nextflow | parser groovy (kolory) + oficjalny serwer językowy nextflow_ls |
 
 ## Struktura plików
@@ -53,13 +54,26 @@ których wymagają poszczególne pluginy.
 `nvim-treesitter` na gałęzi `main` wymaga również `tar`, `curl`, kompilatora C oraz
 `tree-sitter-cli` w wersji **0.26.1 lub nowszej**.
 
+Dla pracy z Rustem potrzebujesz standardowego toolchainu Rust (`rustc` i `cargo`).
+Najwygodniej zainstalować go przez `rustup`. Sam `rust-analyzer` jest instalowany przez
+Masona, więc nie musisz instalować jego osobnej kopii systemowej.
+
 ### macOS (Homebrew)
 
 ```bash
-brew install neovim ripgrep lazygit curl tree-sitter
+brew install neovim ripgrep lazygit curl tree-sitter rustup
 brew install openjdk@17                              # Java dla serwera językowego Nextflow
 xcode-select --install                               # kompilator C (dla parserów treesittera)
 brew install --cask font-jetbrains-mono-nerd-font    # font z ikonami
+
+rustup-init                                           # instalacja rustc + cargo
+```
+
+Po instalacji Rusta otwórz nowy terminal i sprawdź:
+
+```bash
+rustc --version
+cargo --version
 ```
 
 Sprawdź wersję CLI Treesittera:
@@ -76,6 +90,19 @@ Powinna wynosić co najmniej `0.26.1`.
 sudo apt update
 sudo apt install neovim build-essential ripgrep git curl tar wl-clipboard openjdk-17-jre
 # (jeśli używasz X11 zamiast Wayland, zamiast wl-clipboard daj: sudo apt install xclip)
+```
+
+Rust najlepiej zainstalować przez oficjalny `rustup`:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Po instalacji otwórz nowy terminal i sprawdź:
+
+```bash
+rustc --version
+cargo --version
 ```
 
 Dodatkowo zainstaluj `tree-sitter-cli` w wersji co najmniej `0.26.1` zgodnie z instrukcją
@@ -114,8 +141,8 @@ Przy pierwszym starcie `vim.pack` zapyta, które pluginy pobrać — naciśnij *
 (akceptuj wszystkie). Potem:
 
 1. Poczekaj, aż treesitter dociągnie parsery (to chwilę trwa — w tle).
-2. Wpisz `:Mason` i sprawdź, czy serwery (basedpyright, ruff, bash-language-server)
-   się instalują.
+2. Wpisz `:Mason` i sprawdź, czy serwery (basedpyright, ruff, bash-language-server,
+   rust-analyzer) się instalują.
 3. **Zrestartuj Neovima** — kolorowanie składni i podpowiedzi będą już aktywne.
 
 Diagnostyka, gdyby coś nie grało: `:checkhealth` (ogólnie) oraz `:checkhealth vim.pack`
@@ -145,6 +172,40 @@ nvim   # vim.pack odtworzy pluginy z nvim-pack-lock.json
 
 Plik `nvim-pack-lock.json` **commituj razem z configiem** — to on gwarantuje, że na
 obu maszynach masz dokładnie te same wersje pluginów.
+
+## Rust
+
+Wsparcie dla Rusta celowo korzysta tylko z istniejącego stosu pluginów:
+
+- Treesitter zapewnia kolorowanie składni dla plików `.rs`,
+- `rust-analyzer` zapewnia analizę kodu, diagnostykę, definicje, rename i code actions,
+- `blink.cmp` wykorzystuje LSP do autouzupełniania i obsługi snippetów.
+
+Nie jest potrzebny dodatkowy plugin typu `rustaceanvim`, dopóki nie potrzebujesz funkcji
+specyficznych dla Rusta ponad standardowe możliwości LSP. Dzięki temu konfiguracja pozostaje
+mała i łatwa do utrzymania.
+
+Najprostszy test:
+
+```bash
+cargo new hello-rust
+cd hello-rust
+nvim src/main.rs
+```
+
+W Neovimie możesz sprawdzić aktywny serwer przez:
+
+```vim
+:checkhealth lsp
+```
+
+lub:
+
+```vim
+:lua =vim.lsp.get_clients()
+```
+
+Dla pliku `.rs` na liście powinien pojawić się `rust_analyzer`.
 
 ## Nextflow
 
@@ -205,9 +266,12 @@ i wpisz `:checkhealth lsp` albo `:lua =vim.lsp.get_clients()`.
   dopóki parser się nie pobierze. To normalne — po restarcie działa od razu.
 - `vim.pack` jest częścią Neovima 0.12, ale nadal jest oznaczony jako API eksperymentalne.
   W tej konfiguracji używamy go świadomie, żeby zachować prosty, natywny setup.
+- Konfiguracja celowo nie stosuje rozbudowanego lazy-loadingu. Przy obecnej liczbie
+  pluginów zysk byłby niewielki, a konfiguracja stałaby się trudniejsza do czytania
+  i diagnozowania.
 
 ## Łatwe dodatki na później (opcjonalnie)
 
-- `stevearc/conform.nvim` — formatowanie przy zapisie (np. ruff dla Pythona).
+- `stevearc/conform.nvim` — formatowanie przy zapisie (np. ruff dla Pythona i rustfmt dla Rusta).
 
 Jeśli zechcesz, dopiszę gotowy moduł w tym samym stylu.
