@@ -25,11 +25,9 @@ vim.pack.add({
   -- Ikony używane przez pasek statusu, oil i telescope (wymaga Nerd Font — patrz README)
   { src = "https://github.com/nvim-tree/nvim-web-devicons" },
 
-  -- Kolorowanie składni. Gałąź `main` to nowe API (duży przepis z 2026 r.) —
-  -- dlatego przypinamy się jawnie do "main".
-  -- UWAGA: repozytorium zarchiwizowano 3.04.2026 (jest tylko do odczytu). Gałąź `main`
-  -- to ukończony, działający stan pod 0.12 — używamy go świadomie. Gdy wyklaruje się
-  -- utrzymywany następca, warto rozważyć przesiadkę (patrz README).
+  -- Kolorowanie składni. Gałąź `main` to aktualne, przepisane API przeznaczone
+  -- dla Neovima 0.12+, dlatego przypinamy się jawnie do "main".
+  -- Po aktualizacji pluginu parsery są automatycznie odświeżane przez hook PackChanged powyżej.
   { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "main" },
 
   -- Autouzupełnianie. blink.cmp jest napisany w Ruście; przypięcie do wydań 1.x
