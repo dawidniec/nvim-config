@@ -14,13 +14,14 @@ require("mason-lspconfig").setup({
     "basedpyright", -- Python: typy, podpowiedzi, nawigacja po kodzie
     "ruff",         -- Python: bardzo szybki linter + formater
     "bashls",       -- Bash: bash-language-server
+    "rust_analyzer", -- Rust: analiza kodu, podpowiedzi, nawigacja i diagnostyka
   },
   automatic_enable = false,
 })
 
 -- 3) Włączamy serwery. Ich gotowe konfiguracje dostarcza nvim-lspconfig
 --    (są już na "runtimepath"), więc wystarczy podać nazwy.
-vim.lsp.enable({ "basedpyright", "ruff", "bashls" })
+vim.lsp.enable({ "basedpyright", "ruff", "bashls", "rust_analyzer" })
 
 -- 4) Skróty LSP ustawiamy dopiero w chwili, gdy serwer "podłączy się" do bufora
 --    (zdarzenie LspAttach). Dzięki temu działają tylko tam, gdzie jest serwer.
