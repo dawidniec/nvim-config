@@ -1,7 +1,7 @@
 -- Motyw tokyonight.
 -- Dostępne warianty stylu: "night" (ciemny), "storm", "moon", "day" (jasny).
 require("tokyonight").setup({
-  style = "night",
+  style = "moon",
 })
 
 -- Włącz motyw. Robimy to tutaj, zaraz po vim.pack.add, żeby kolory pojawiły się
