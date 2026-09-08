@@ -1,38 +1,319 @@
-# Konfiguracja Neovim (0.12+) — Python, Bash, Rust & Nextflow
+# Neovim config — Python, Bash, Rust & Nextflow
 
-Lekka, modularna konfiguracja dla hobbysty. Oparta na **wbudowanym** menedżerze
-wtyczek `vim.pack` (Neovim 0.12+), z minimalną liczbą sprawdzonych, aktywnie
-rozwijanych pluginów.
+Lekka, modularna konfiguracja Neovima 0.12+ oparta na wbudowanym menedżerze
+pluginów `vim.pack`. Cel: mało pluginów, czytelny Lua i wygodna konfiguracja do
+codziennej pracy bez rozbudowanego frameworka wokół Neovima.
 
 ## Co jest w zestawie
 
 | Funkcja | Rozwiązanie |
 | --- | --- |
-| Menedżer wtyczek | `vim.pack` (wbudowany w Neovim 0.12) |
-| Motyw | tokyonight (wariant moon) |
-| Kolorowanie składni | nvim-treesitter (gałąź `main`) |
-| Autouzupełnianie | blink.cmp |
-| LSP (serwery językowe) | nvim-lspconfig + mason (basedpyright, ruff, bashls, rust_analyzer) |
-| Git | gitsigns (znaczniki) + lazygit (TUI) |
-| Przeglądarka plików | oil.nvim |
-| Pasek statusu | lualine |
-| Wyszukiwarka | telescope |
-| Podpowiedzi skrótów | which-key |
+| Pluginy | `vim.pack` + `nvim-pack-lock.json` |
+| Motyw | TokyoNight (`moon`) |
+| Składnia | nvim-treesitter (`main`) |
+| Autouzupełnianie | blink.cmp + friendly-snippets |
+| LSP | nvim-lspconfig + mason + mason-lspconfig |
+| Python | basedpyright + ruff |
+| Bash | bash-language-server |
+| Rust | rust-analyzer + Treesitter |
+| Nextflow | parser Groovy + oficjalny Nextflow Language Server |
+| Git | gitsigns + lazygit |
+| Pliki | oil.nvim |
+| Wyszukiwanie | telescope.nvim |
+| Statusline | lualine.nvim |
+| Podpowiedzi skrótów | which-key.nvim |
 | Domykanie nawiasów | nvim-autopairs |
-| Rust | parser Treesitter + rust-analyzer + blink.cmp |
-| Nextflow | parser groovy (kolory) + oficjalny serwer językowy nextflow_ls |
+| Białe znaki | widoczne tabulatory i trailing spaces |
 
-## Struktura plików
+## Szybka instalacja
 
+Wymagany jest **Neovim 0.12 lub nowszy**.
+
+Jeśli masz już konfigurację Neovima, najpierw zrób jej kopię:
+
+```bash
+mv ~/.config/nvim ~/.config/nvim.backup 2>/dev/null
 ```
+
+Następnie:
+
+```bash
+git clone https://github.com/dawidniec/nvim-config.git ~/.config/nvim
+nvim
+```
+
+Przy pierwszym uruchomieniu `vim.pack` automatycznie pobierze brakujące pluginy.
+Repo zawiera `nvim-pack-lock.json`, więc pluginy zostaną odtworzone w zapisanych
+wersjach.
+
+Treesitter zacznie również pobierać brakujące parsery, a Mason zainstaluje
+skonfigurowane serwery LSP. Po zakończeniu instalacji warto raz zrestartować
+Neovima.
+
+Stan LSP możesz sprawdzić przez:
+
+```vim
+:Mason
+:checkhealth lsp
+```
+
+## Wymagania systemowe
+
+Poza Neovimem konfiguracja korzysta z kilku programów zewnętrznych:
+
+- `git` — pobieranie pluginów i praca z repozytoriami,
+- `ripgrep` (`rg`) — `Telescope live_grep`,
+- `lazygit` — interfejs Git uruchamiany przez `<space>gg`,
+- `curl`, `tar` i kompilator C — wymagane przez nvim-treesitter,
+- `tree-sitter-cli >= 0.26.1`,
+- Nerd Font — opcjonalny, ale potrzebny do poprawnego wyświetlania ikon,
+- Rust toolchain (`rustc`, `cargo`) — jeśli edytujesz Rust,
+- Java 17+ — jeśli chcesz używać Nextflow Language Server.
+
+### macOS (Homebrew)
+
+```bash
+brew install neovim ripgrep lazygit curl tree-sitter openjdk@21
+brew install --cask font-jetbrains-mono-nerd-font
+xcode-select --install
+```
+
+`openjdk@21` jest keg-only, więc upewnij się, że `java` jest dostępna w `PATH`:
+
+```bash
+echo 'export PATH="$(brew --prefix openjdk@21)/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+java --version
+```
+
+Rust najprościej zainstalować przez rustup:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+### Ubuntu
+
+```bash
+sudo apt update
+sudo apt install neovim build-essential ripgrep git curl tar wl-clipboard openjdk-21-jre
+```
+
+Jeśli używasz X11 zamiast Waylanda, zamiast `wl-clipboard` zainstaluj `xclip`.
+
+Pakiet `neovim` w repozytorium Twojej wersji Ubuntu może być starszy niż 0.12.
+Sprawdź:
+
+```bash
+nvim --version
+```
+
+Jeśli jest za stary, zainstaluj aktualne wydanie Neovima z oficjalnych wydań projektu.
+
+Rust:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+`tree-sitter-cli` musi mieć wersję co najmniej 0.26.1. Sprawdź:
+
+```bash
+tree-sitter --version
+```
+
+Nie używaj starej wersji instalowanej z npm tylko dlatego, że występuje w starszych
+poradnikach Treesittera.
+
+`lazygit` nie zawsze jest dostępny w domyślnych repozytoriach Ubuntu. Jeśli go nie
+ma, zainstaluj oficjalną binarkę zgodnie z instrukcją projektu lazygit.
+
+## Najważniejsze skróty
+
+Leader to **spacja**.
+
+| Skrót | Działanie |
+| --- | --- |
+| `<space>w` | zapisz plik |
+| `<space>q` | zamknij okno |
+| `<space>Q` | zamknij okno bez zapisywania |
+| `<Esc>` | wyczyść podświetlenie wyszukiwania |
+| `Ctrl-h/j/k/l` | przejdź do okna w lewo/dół/górę/prawo |
+| `-` lub `<space>e` | otwórz oil.nvim |
+| `<space>ff` | znajdź plik po nazwie |
+| `<space>fg` | szukaj tekstu w plikach |
+| `<space>fb` | otwórz wyszukiwalną listę buforów |
+| `<space>fh` | przeszukaj pomoc Neovima |
+| `<space>gg` | otwórz lazygit |
+| `]c` / `[c` | następna / poprzednia zmiana Git |
+| `<space>hp` | podgląd zmiany Git |
+| `<space>hs` | stage bieżącej zmiany |
+| `<space>hr` | cofnij bieżącą zmianę |
+| `gd` | idź do definicji (LSP) |
+| `K` | dokumentacja pod kursorem (LSP) |
+| `<space>rn` | zmień nazwę symbolu (LSP) |
+| `<space>ca` | code action (LSP) |
+| `<space>d` | diagnostyka bieżącej linii |
+| `<Enter>` w menu | zaakceptuj zaznaczoną podpowiedź |
+| `<Tab>` / `<S-Tab>` w menu | następna / poprzednia podpowiedź |
+
+## Bufory, okna i splity
+
+W Neovimie warto rozróżnić trzy pojęcia:
+
+- **buffer** — zawartość pliku lub inny edytowany tekst,
+- **window** — widok pokazujący bufor,
+- **tab page** — układ jednego lub kilku okien.
+
+Dlatego `:vs` (`:vsplit`) tworzy **nowe okno**, a nie nowy bufor. Początkowo oba
+okna mogą pokazywać ten sam bufor.
+
+Najwygodniejsze sposoby pracy z buforami w tej konfiguracji:
+
+```text
+<space>fb   lista otwartych buforów w Telescope
+Ctrl-^      przełącz na poprzednio używany bufor (wbudowany Neovim)
+:bn         następny bufor
+:bp         poprzedni bufor
+```
+
+Do przechodzenia między splitami używaj `Ctrl-h/j/k/l`.
+
+## Białe znaki
+
+Konfiguracja pokazuje tylko znaki, które zwykle warto zauważyć podczas edycji:
+
+- tabulator jako `→`,
+- spacje na końcu linii jako `·`.
+
+Zwykłe spacje wewnątrz tekstu pozostają niewidoczne.
+
+## Rust
+
+Wsparcie dla Rusta korzysta z istniejącego stosu pluginów, bez dodatkowego
+`rustaceanvim`:
+
+- Treesitter — składnia,
+- `rust-analyzer` — diagnostyka, definicje, rename i code actions,
+- blink.cmp — podpowiedzi LSP i snippety.
+
+Toolchain Rust musi być dostępny w systemie:
+
+```bash
+rustc --version
+cargo --version
+```
+
+Szybki test:
+
+```bash
+cargo new hello-rust
+cd hello-rust
+nvim src/main.rs
+```
+
+Dla pliku `.rs` polecenie:
+
+```vim
+:lua =vim.lsp.get_clients()
+```
+
+powinno pokazać klienta `rust_analyzer`.
+
+## Nextflow
+
+Pliki `.nf` i `nextflow.config` są rozpoznawane jako `nextflow`. Kolorowanie
+zapewnia parser Groovy.
+
+Podpowiedzi, definicje i diagnostyka wymagają oficjalnego **Nextflow Language
+Server** oraz Javy 17 lub nowszej.
+
+Pobierz `language-server-all.jar` z wydań:
+
+https://github.com/nextflow-io/language-server/releases
+
+i zapisz go jako:
+
+```text
+~/.local/share/nextflow-ls/language-server-all.jar
+```
+
+Na przykład najpierw utwórz katalog:
+
+```bash
+mkdir -p ~/.local/share/nextflow-ls
+```
+
+Konfiguracja sama wykryje plik `.jar`. Jeśli go nie ma, LSP Nextflow zostanie po
+prostu pominięty — kolorowanie nadal będzie działać.
+
+Sprawdzenie:
+
+```vim
+:checkhealth lsp
+:lua =vim.lsp.get_clients()
+```
+
+## Aktualizacja pluginów
+
+W Neovimie:
+
+```vim
+:PackUpdate
+```
+
+`vim.pack` pokaże podgląd aktualizacji. Po zaakceptowaniu zmian zaktualizuje też
+`nvim-pack-lock.json`.
+
+Konfiguracja ma hook `PackChanged`, który po aktualizacji `nvim-treesitter`
+automatycznie uruchamia `:TSUpdate`, żeby wersje parserów pozostały zgodne z
+pluginem.
+
+Po aktualizacji sprawdź zmiany w Git i commituj lockfile razem z konfiguracją.
+
+## Diagnostyka
+
+Jeśli coś nie działa, zacznij od:
+
+```vim
+:checkhealth
+:checkhealth vim.pack
+:checkhealth nvim-treesitter
+:checkhealth lsp
+```
+
+Przydatne polecenia systemowe:
+
+```bash
+nvim --version
+rg --version
+tree-sitter --version
+lazygit --version
+java --version
+rustc --version
+cargo --version
+```
+
+Typowe problemy:
+
+- brak wyników w `<space>fg` → sprawdź, czy działa `rg`,
+- puste kwadraty zamiast ikon → ustaw Nerd Font w terminalu,
+- brak kolorowania po pierwszym uruchomieniu → poczekaj na instalację parserów i zrestartuj Neovima,
+- brak LSP dla Pythona/Basha/Rusta → sprawdź `:Mason` i `:checkhealth lsp`,
+- brak LSP dla Nextflow → sprawdź plik `.jar` i `java --version`,
+- problemy z Treesitterem → sprawdź `tree-sitter --version` i `:checkhealth nvim-treesitter`.
+
+## Struktura konfiguracji
+
+```text
 ~/.config/nvim/
-├── init.lua                 # punkt wejścia: kolejność wczytywania
-├── nvim-pack-lock.json      # (powstaje sam po 1. starcie — commituj go!)
+├── init.lua
+├── nvim-pack-lock.json
 └── lua/dawid/
-    ├── options.lua          # ustawienia edytora
-    ├── keymaps.lua          # skróty niezależne od pluginów
+    ├── options.lua
+    ├── keymaps.lua
     └── plugins/
-        ├── init.lua         # JEDNA lista vim.pack.add(...) + kolejność konfiguracji
+        ├── init.lua
         ├── colorscheme.lua
         ├── treesitter.lua
         ├── completion.lua
@@ -46,232 +327,12 @@ rozwijanych pluginów.
         └── nextflow.lua
 ```
 
-## Zanim zaczniesz — co zainstalować w systemie
+- `init.lua` — punkt wejścia, leader i kolejność ładowania,
+- `options.lua` — ustawienia Neovima,
+- `keymaps.lua` — skróty niezależne od pluginów,
+- `plugins/init.lua` — lista pluginów dla `vim.pack` i kolejność konfiguracji,
+- pozostałe pliki w `plugins/` — konfiguracja konkretnych funkcji/pluginów.
 
-Neovim w wersji **0.12 lub nowszej** (sprawdź: `nvim --version`). Reszta to programy,
-których wymagają poszczególne pluginy.
-
-`nvim-treesitter` na gałęzi `main` wymaga również `tar`, `curl`, kompilatora C oraz
-`tree-sitter-cli` w wersji **0.26.1 lub nowszej**.
-
-Dla pracy z Rustem potrzebujesz standardowego toolchainu Rust (`rustc` i `cargo`).
-Najwygodniej zainstalować go przez `rustup`. Sam `rust-analyzer` jest instalowany przez
-Masona, więc nie musisz instalować jego osobnej kopii systemowej.
-
-### macOS (Homebrew)
-
-```bash
-brew install neovim ripgrep lazygit curl tree-sitter rustup
-brew install openjdk@17                              # Java dla serwera językowego Nextflow
-xcode-select --install                               # kompilator C (dla parserów treesittera)
-brew install --cask font-jetbrains-mono-nerd-font    # font z ikonami
-
-rustup-init                                           # instalacja rustc + cargo
-```
-
-Po instalacji Rusta otwórz nowy terminal i sprawdź:
-
-```bash
-rustc --version
-cargo --version
-```
-
-Sprawdź wersję CLI Treesittera:
-
-```bash
-tree-sitter --version
-```
-
-Powinna wynosić co najmniej `0.26.1`.
-
-### Ubuntu
-
-```bash
-sudo apt update
-sudo apt install neovim build-essential ripgrep git curl tar wl-clipboard openjdk-17-jre
-# (jeśli używasz X11 zamiast Wayland, zamiast wl-clipboard daj: sudo apt install xclip)
-```
-
-Rust najlepiej zainstalować przez oficjalny `rustup`:
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-Po instalacji otwórz nowy terminal i sprawdź:
-
-```bash
-rustc --version
-cargo --version
-```
-
-Dodatkowo zainstaluj `tree-sitter-cli` w wersji co najmniej `0.26.1` zgodnie z instrukcją
-Twojej dystrybucji lub oficjalną instrukcją projektu Tree-sitter. Nie instaluj starej
-wersji z npm tylko dlatego, że pojawia się w dawnych poradnikach.
-
-`lazygit` często nie ma w domyślnych repozytoriach Ubuntu — najpewniej pobrać oficjalną binarkę:
-
-```bash
-LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": *"v\K[^"]*')
-curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-tar xf lazygit.tar.gz lazygit
-sudo install lazygit -D -t /usr/local/bin/
-rm lazygit lazygit.tar.gz
-```
-
-Font z ikonami (Nerd Font) na Ubuntu pobierzesz z https://www.nerdfonts.com — rozpakuj
-do `~/.local/share/fonts`, uruchom `fc-cache -f`, a potem **ustaw ten font w swoim terminalu**.
-Bez Nerd Font wszystko działa, ale ikonki będą wyglądać jak puste kwadraciki.
-
-> **Uwaga o `nvim --version`:** jeśli Twoja dystrybucja ma starszego Neovima niż 0.12,
-> użyj nowszej paczki (np. na Ubuntu: `sudo snap install nvim --classic`, albo wydanie
-> AppImage z https://github.com/neovim/neovim/releases).
-
-## Instalacja konfiguracji
-
-Jeśli masz już jakiś config Neovima — najpierw zrób kopię, żeby nic nie stracić:
-
-```bash
-mv ~/.config/nvim ~/.config/nvim.backup 2>/dev/null
-mv ~/.local/share/nvim ~/.local/share/nvim.backup 2>/dev/null   # stare pluginy/dane
-```
-
-Skopiuj zawartość tego katalogu do `~/.config/nvim`, a następnie uruchom `nvim`.
-Przy pierwszym starcie `vim.pack` zapyta, które pluginy pobrać — naciśnij **`a`**
-(akceptuj wszystkie). Potem:
-
-1. Poczekaj, aż treesitter dociągnie parsery (to chwilę trwa — w tle).
-2. Wpisz `:Mason` i sprawdź, czy serwery (basedpyright, ruff, bash-language-server,
-   rust-analyzer) się instalują.
-3. **Zrestartuj Neovima** — kolorowanie składni i podpowiedzi będą już aktywne.
-
-Diagnostyka, gdyby coś nie grało: `:checkhealth` (ogólnie) oraz `:checkhealth vim.pack`
-(dla menedżera wtyczek).
-
-## Trzymanie configu na GitHubie
-
-Po pierwszym uruchomieniu (gdy istnieje już `nvim-pack-lock.json`):
-
-```bash
-cd ~/.config/nvim
-git init
-git add .
-git commit -m "Moja konfiguracja Neovim"
-# utwórz puste repo na GitHubie, potem:
-git remote add origin git@github.com:TWOJ_LOGIN/nvim.git
-git branch -M main
-git push -u origin main
-```
-
-Na drugim komputerze (po zainstalowaniu programów z sekcji wyżej):
-
-```bash
-git clone git@github.com:TWOJ_LOGIN/nvim.git ~/.config/nvim
-nvim   # vim.pack odtworzy pluginy z nvim-pack-lock.json
-```
-
-Plik `nvim-pack-lock.json` **commituj razem z configiem** — to on gwarantuje, że na
-obu maszynach masz dokładnie te same wersje pluginów.
-
-## Rust
-
-Wsparcie dla Rusta celowo korzysta tylko z istniejącego stosu pluginów:
-
-- Treesitter zapewnia kolorowanie składni dla plików `.rs`,
-- `rust-analyzer` zapewnia analizę kodu, diagnostykę, definicje, rename i code actions,
-- `blink.cmp` wykorzystuje LSP do autouzupełniania i obsługi snippetów.
-
-Nie jest potrzebny dodatkowy plugin typu `rustaceanvim`, dopóki nie potrzebujesz funkcji
-specyficznych dla Rusta ponad standardowe możliwości LSP. Dzięki temu konfiguracja pozostaje
-mała i łatwa do utrzymania.
-
-Najprostszy test:
-
-```bash
-cargo new hello-rust
-cd hello-rust
-nvim src/main.rs
-```
-
-W Neovimie możesz sprawdzić aktywny serwer przez:
-
-```vim
-:checkhealth lsp
-```
-
-lub:
-
-```vim
-:lua =vim.lsp.get_clients()
-```
-
-Dla pliku `.rs` na liście powinien pojawić się `rust_analyzer`.
-
-## Nextflow
-
-Kolorowanie plików `.nf` działa od razu (przez parser Groovy — Nextflow to dialekt Groovy).
-Żeby dostać też podpowiedzi, definicje i diagnostykę, doinstaluj oficjalny **serwer językowy
-Nextflow**. To plik `.jar` uruchamiany Javą (stąd `openjdk-17` w wymaganiach):
-
-```bash
-mkdir -p ~/.local/share/nextflow-ls
-# Pobierz najnowszy plik "language-server-all.jar" ze strony wydań:
-#   https://github.com/nextflow-io/language-server/releases
-# i zapisz go pod tą nazwą:
-#   ~/.local/share/nextflow-ls/language-server-all.jar
-```
-
-Config sam wykryje ten plik przy starcie: jeśli `.jar` jest na miejscu, serwer się włączy;
-jeśli go nie ma, Neovim po prostu pominie LSP (kolorowanie i tak działa). Ścieżkę można
-zmienić w `lua/dawid/plugins/nextflow.lua`. Sprawdzić, czy serwer wstał: otwórz plik `.nf`
-i wpisz `:checkhealth lsp` albo `:lua =vim.lsp.get_clients()`.
-
-## Skróty (leader = spacja)
-
-| Skrót | Działanie |
-| --- | --- |
-| `<space>w` / `<space>q` | zapisz / zamknij okno |
-| `<Esc>` | wyczyść podświetlenie wyszukiwania |
-| `Ctrl-h/j/k/l` | skok między oknami |
-| `-` lub `<space>e` | przeglądarka plików (oil) |
-| `<space>ff` | znajdź plik po nazwie |
-| `<space>fg` | szukaj tekstu w plikach |
-| `<space>fb` | przełącz bufor |
-| `<space>fh` | przeszukaj pomoc |
-| `<space>gg` | otwórz lazygit |
-| `]c` / `[c` | następna / poprzednia zmiana gita |
-| `<space>hp/hs/hr` | podgląd / dodaj (stage) / cofnij zmianę |
-| `gd` | idź do definicji (LSP) |
-| `K` | dokumentacja pod kursorem (LSP) |
-| `<space>rn` | zmień nazwę symbolu (LSP) |
-| `<space>ca` | akcje kodu (LSP) |
-| `<space>d` | pokaż błąd/ostrzeżenie w linii |
-| `<Enter>` (w menu) | zaakceptuj świadomie zaznaczoną podpowiedź |
-| `<Tab>` / `<S-Tab>` (w menu) | następna / poprzednia podpowiedź |
-
-## Codzienne zarządzanie pluginami
-
-- **Aktualizacja wszystkich:** `:PackUpdate` (pokaże podgląd zmian — zapisz kartę, by potwierdzić).
-- **Dodanie pluginu:** dopisz wpis w `lua/dawid/plugins/init.lua` w `vim.pack.add({...})`,
-  dodaj jego konfigurację i zrestartuj Neovima.
-- **Usunięcie pluginu:** najpierw skasuj go z configu, potem `:lua vim.pack.del({ "nazwa-pluginu" })`.
-
-## Drobne uwagi
-
-- **basedpyright + ruff** trochę się pokrywają (oba potrafią pokazać informacje pod
-  kursorem). Na start to nie przeszkadza; gdyby diagnostyka się dublowała, można
-  wyłączyć linter w jednym z nich — daj znać, dopasujemy.
-- Treesitter na gałęzi `main` to aktualna, przepisana wersja przeznaczona dla
-  Neovima 0.12+. Przy pierwszym pliku danego typu może chwilę nie kolorować,
-  dopóki parser się nie pobierze. To normalne — po restarcie działa od razu.
-- `vim.pack` jest częścią Neovima 0.12, ale nadal jest oznaczony jako API eksperymentalne.
-  W tej konfiguracji używamy go świadomie, żeby zachować prosty, natywny setup.
-- Konfiguracja celowo nie stosuje rozbudowanego lazy-loadingu. Przy obecnej liczbie
-  pluginów zysk byłby niewielki, a konfiguracja stałaby się trudniejsza do czytania
-  i diagnozowania.
-
-## Łatwe dodatki na później (opcjonalnie)
-
-- `stevearc/conform.nvim` — formatowanie przy zapisie (np. ruff dla Pythona i rustfmt dla Rusta).
-
-Jeśli zechcesz, dopiszę gotowy moduł w tym samym stylu.
+Konfiguracja celowo nie używa rozbudowanego lazy-loadingu. Przy tej liczbie
+pluginów prostota i łatwość diagnozowania są ważniejsze niż niewielki zysk czasu
+startu.
