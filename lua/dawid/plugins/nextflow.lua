@@ -1,9 +1,8 @@
 -- Wsparcie dla Nextflow.
 --
--- Nextflow to dialekt języka Groovy ze swoimi słowami kluczowymi (process, workflow,
--- channel...). Składa się to z trzech kawałków:
+-- Wsparcie składa się z trzech kawałków:
 --   1) rozpoznanie plików .nf jako typu "nextflow",
---   2) kolorowanie składni (używamy parsera Groovy — solidnego i utrzymywanego),
+--   2) kolorowanie składni (dedykowany parser tree-sitter-nextflow),
 --   3) serwer językowy (podpowiedzi, definicje, diagnostyka).
 
 -- 1) Rozpoznawanie plików. Neovim domyślnie nie wie, czym jest .nf — mówimy mu.
@@ -12,11 +11,8 @@ vim.filetype.add({
   filename = { ["nextflow.config"] = "nextflow" },
 })
 
--- 2) Kolorowanie składni przez parser Groovy.
---    register() mówi treesitterowi: "pliki typu nextflow parsuj jak groovy".
---    Dzięki temu zadziała ten sam, ogólny mechanizm z plugins/treesitter.lua
---    (parser "groovy" instalujemy właśnie tam, na liście języków).
-pcall(vim.treesitter.language.register, "groovy", "nextflow")
+-- 2) Typ pliku i parser mają tę samą nazwę: nextflow.
+--    Rejestrację i instalację parsera oraz zapytań obsługuje plugins/treesitter.lua.
 
 -- 3) Oficjalny serwer językowy Nextflow (od twórców Nextflow).
 --    To plik .jar uruchamiany przez Javę — WYMAGA Javy 17+ oraz pobrania pliku .jar
@@ -38,7 +34,7 @@ if vim.fn.filereadable(jar) == 1 then
     -- które potrafią wskazywać linię spoza bufora — Neovim zgłasza wtedy błąd
     -- "Invalid 'line': out of range". Wyłączamy semantic tokens TYLKO dla tego
     -- serwera, jeszcze zanim wystartują (on_init działa zaraz po inicjalizacji,
-    -- przed podłączeniem do bufora). Kolorowanie i tak robi treesitter (groovy),
+    -- przed podłączeniem do bufora). Kolorowanie i tak robi treesitter (nextflow),
     -- a podpowiedzi, definicje i diagnostyka działają normalnie.
     on_init = function(client)
       client.server_capabilities.semanticTokensProvider = nil
