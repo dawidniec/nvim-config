@@ -16,7 +16,7 @@ codziennej pracy bez rozbudowanego frameworka wokół Neovima.
 | Python | basedpyright + ruff |
 | Bash | bash-language-server |
 | Rust | rust-analyzer + Treesitter |
-| Nextflow | parser Groovy + oficjalny Nextflow Language Server |
+| Nextflow | tree-sitter-nextflow + oficjalny Nextflow Language Server |
 | Git | gitsigns + lazygit |
 | Pliki | oil.nvim |
 | Wyszukiwanie | telescope.nvim |
@@ -223,7 +223,30 @@ powinno pokazać klienta `rust_analyzer`.
 ## Nextflow
 
 Pliki `.nf` i `nextflow.config` są rozpoznawane jako `nextflow`. Kolorowanie
-zapewnia parser Groovy.
+zapewnia dedykowany [tree-sitter-nextflow](https://github.com/nextflow-io/tree-sitter-nextflow).
+Parser oraz zapytania podświetlania są pobierane razem z commita
+`b27430d88bf201d559dc1be426988388da8e5a54`, przypiętego w
+`lua/dawid/plugins/treesitter.lua`. Zapytania obejmują również osadzony Bash;
+jego parser jest instalowany jako zależność. Nie trzeba instalować pakietu Python.
+
+Parser jest rejestrowany przez hook `User TSUpdate`, więc działa także po
+odświeżeniu rejestru przez `:TSUpdate` i `:PackUpdate`.
+Po pobraniu tej zmiany uruchom Neovima, poczekaj na instalację parsera i zrestartuj
+edytor, aby załadować nowe zapytania podświetlania.
+
+Diagnostyka kolorowania w otwartym pliku Nextflow:
+
+```vim
+:set filetype?
+:InspectTree
+:Inspect
+```
+
+Typ pliku powinien być `nextflow`, a `:InspectTree` powinno pokazywać drzewo
+parsera Nextflow. W treści skryptu procesu `:Inspect` pozwala sprawdzić
+podświetlanie Bash. W razie problemów z instalacją użyj `:TSInstall nextflow`.
+Przy aktualizacji przypiętego commita uruchom `:TSUpdate nextflow` i zrestartuj
+edytor, aby przeładować bibliotekę parsera oraz zapytania.
 
 Podpowiedzi, definicje i diagnostyka wymagają oficjalnego **Nextflow Language
 Server** oraz Javy 17 lub nowszej.
